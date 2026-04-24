@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, clock, CheckCircle } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 const AdminDashboard = ({ stats }) => {
   return (
