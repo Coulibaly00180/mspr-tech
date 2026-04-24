@@ -16,7 +16,7 @@ const AdminDashboard = ({ stats }) => {
         </div>
       </div>
       <div className="audit-logs">
-        <label>Journal d'Audit (Tracé technique)</label>
+        <label>Journal d'Audit</label>
         <ul>
           {stats.logs.map((log, i) => (
             <li key={i}>{log}</li>
