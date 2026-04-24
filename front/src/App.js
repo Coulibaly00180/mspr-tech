@@ -1,155 +1,181 @@
 import React, { useState } from 'react';
-// Nettoyage : KeyRound supprimé car inutilisé
-import { ShieldCheck, QrCode, AlertTriangle, RefreshCw, UserPlus } from 'lucide-react';
+import Layout from './components/Layout';
+import AuthForm from './components/AuthForm';
+import RegisterForm from './components/RegisterForm';
+import QRCodeDisplay from './components/QRCodeDisplay';
+import AdminDashboard from './components/AdminDashboard';
+import { AlertTriangle, LogOut, CheckCircle } from 'lucide-react';
 import { faasApi } from './services/faasApi';
 import './App.css';
 
 function App() {
-  const [step, setStep] = useState('login');
+  const [step, setStep] = useState('login'); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [userData, setUserData] = useState({ username: '', password: '', token: '' });
-  
-  // setCodes est maintenant correctement utilisé pour stocker les images reçues
   const [codes, setCodes] = useState({ pwdQr: '', mfaQr: '' });
+  const [userRole, setUserRole] = useState(null); // 'admin' ou 'user'
 
-  // Gérer l'authentification (Mission 6)
+  // États pour le pilotage (KPI & Logs)
+  const [stats, setStats] = useState({
+    avgTime: 142,
+    successRate: 98,
+    logs: ["Système prêt - Cluster K3S opérationnel"]
+  });
+
+  // Mise à jour des champs de saisie
+  const updateField = (field, value) => {
+    setUserData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Màj du journal d'audit pour la traçabilité 
+  const addLog = (msg) => {
+    const time = new Date().toLocaleTimeString();
+    setStats(prev => ({ 
+      ...prev, 
+      logs: [`${time} - ${msg}`, ...prev.logs.slice(0, 4)] 
+    }));
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    addLog(`Tentative de connexion : ${userData.username}`);
+    
     try {
       const res = await faasApi.login(userData);
+      
       if (res.status === 'expired') {
+        addLog(`Accès expirés (rotation 6 mois) pour : ${userData.username}`);
         setStep('expired');
       } else if (res.authenticated) {
-        alert("Accès autorisé au Cloud COFRAP");
+        addLog(`Authentification réussie : ${userData.username}`);
+        if (userData.username.toLowerCase() === 'admin') {
+          setUserRole('admin');
+          setStep('dashboard');
+        } else {
+          setUserRole('user');
+          setStep('welcome');
+        }
       } else {
-        setError("Échec de l'authentification multifacteur.");
+        setError("Identifiants ou code 2FA incorrects.");
+        addLog(`Échec de connexion : ${userData.username}`);
       }
     } catch (err) {
-      setError("Le service OpenFaaS est injoignable.");
+      setError("Erreur technique : Gateway OpenFaaS injoignable.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Gérer la création de compte (Mission 6 & 7) - AJOUTÉ ICI
   const handleRegister = async () => {
     if (!userData.username) {
       setError("Veuillez saisir un identifiant.");
       return;
     }
+
     setLoading(true);
     setError('');
+    addLog(`Requête de création de compte : ${userData.username}`);
+
     try {
-      // Appel des fonctions OpenFaaS pour générer les secrets
+      // Appel des fonctions Serverless 
       const pwdRes = await faasApi.generatePassword(userData.username);
       const mfaRes = await faasApi.generate2FA(userData.username);
 
-      // Mise à jour de l'état avec les QR codes reçus (Base64)
       setCodes({ 
         pwdQr: pwdRes.qrCode, 
         mfaQr: mfaRes.qrCode 
       });
 
       setStep('display_qr');
+      addLog("Secrets QR Codes générés et chiffrés en base.");
     } catch (err) {
-      setError("Erreur lors de la génération des accès via les fonctions Serverless.");
+      setError("Erreur lors de la génération des accès Serverless.");
+      addLog("Échec génération secrets.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleLogout = () => {
+    setUserRole(null);
+    setStep('login');
+    setUserData({ username: '', password: '', token: '' });
+    addLog("Déconnexion utilisateur.");
+  };
+
   return (
-    <main className="container" role="main">
-      <header>
-        <h1>COFRAP Cloud</h1>
-        <p>Système d'authentification Serverless</p>
-      </header>
+    <Layout username={userData.username} step={step}>
+      {error && (
+        <div className="alert-error">
+          <AlertTriangle size={16} /> {error}
+        </div>
+      )}
 
-      {error && <div className="alert-error" role="alert"><AlertTriangle size={16} /> {error}</div>}
-
-      {/* LOGIN */}
+      {/* Formulaire de connexion */}
       {step === 'login' && (
-        <section aria-labelledby="login-title">
-          <h2 id="login-title"><ShieldCheck color="#3b82f6" /> Connexion</h2>
-          <form onSubmit={handleLogin}>
-            <div className="input-group">
-              <label htmlFor="user">Identifiant</label>
-              <input type="text" id="user" required
-                     onChange={e => setUserData({...userData, username: e.target.value})} />
-            </div>
-            <div className="input-group">
-              <label htmlFor="pass">Mot de passe</label>
-              <input type="password" id="pass" required
-                     onChange={e => setUserData({...userData, password: e.target.value})} />
-            </div>
-            <div className="input-group">
-              <label htmlFor="mfa">Code 2FA (TOTP)</label>
-              <input type="text" id="mfa" maxLength="6" placeholder="000000" required
-                     onChange={e => setUserData({...userData, token: e.target.value})} />
-            </div>
-            <button type="submit" disabled={loading}>
-              {loading ? <RefreshCw className="spin" size={18} /> : "Accéder au Cloud"}
-            </button>
-          </form>
-          <button className="btn-secondary" onClick={() => setStep('register')}>
-            <UserPlus size={18} /> Créer un nouveau compte
-          </button>
-        </section>
+        <AuthForm 
+          onLogin={handleLogin} 
+          onChange={updateField} 
+          loading={loading} 
+          onSwitch={() => setStep('register')} 
+        />
       )}
-
-      {/* CRÉATION DE COMPTE */}
+      
+      {/* Formulaire de création  */}
       {step === 'register' && (
-        <section>
-          <h2><UserPlus color="#3b82f6" /> Initialisation</h2>
-          <div className="input-group" style={{marginBottom: '1rem'}}>
-            <label htmlFor="reg-user">Choisissez un identifiant</label>
-            <input type="text" id="reg-user" 
-                   onChange={e => setUserData({...userData, username: e.target.value})} />
-          </div>
-          <button onClick={handleRegister} disabled={loading} style={{width: '100%'}}>
-            {loading ? <RefreshCw className="spin" size={18} /> : "Générer mes accès sécurisés"}
-          </button>
-          <button className="btn-secondary" onClick={() => setStep('login')}>Retour</button>
-        </section>
+        <RegisterForm 
+          onRegister={handleRegister} 
+          onChange={updateField} 
+          loading={loading} 
+          onBack={() => setStep('login')} 
+        />
       )}
 
-      {/* AFFICHAGE QR */}
+      {/* Affichage des QR Codes  */}
       {step === 'display_qr' && (
-        <section className="qr-section">
-          <h2><QrCode color="#10b981" /> Secrets de sécurité</h2>
-          <p style={{fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1rem'}}>
-            Sauvegardez ces codes. Le mot de passe (24 chars) est à usage unique.
-          </p>
-          <div className="qr-grid">
-            <div className="qr-card">
-              <label>Mot de Passe</label>
-              <img src={codes.pwdQr} alt="QR Code Mot de Passe" />
-            </div>
-            <div className="qr-card">
-              <label>Secret 2FA</label>
-              <img src={codes.mfaQr} alt="QR Code 2FA" />
-            </div>
-          </div>
-          <button onClick={() => setStep('login')} style={{width: '100%'}}>
-            J'ai configuré mes accès
-          </button>
-        </section>
+        <QRCodeDisplay 
+          codes={codes} 
+          onFinish={() => setStep('login')} 
+        />
       )}
 
-      {/* EXPIRATION (Rotation 6 mois) */}
+      {/* Cas des accès expirés (Rotation 6 mois) */}
       {step === 'expired' && (
         <section className="alert-expired">
-          <h2><RefreshCw color="#f59e0b" /> Rotation Requise</h2>
-          <p>Vos identifiants ont plus de 6 mois. Pour la sécurité de la COFRAP, vous devez les renouveler.</p>
-          <button onClick={() => setStep('register')} style={{width: '100%'}}>
-            Réinitialiser mes accès
-          </button>
+          <h2>Accès Expirés</h2>
+          <p>La politique de sécurité COFRAP exige une rotation tous les 6 mois. Veuillez régénérer vos accès.</p>
+          <button onClick={() => setStep('register')} style={{width:'100%'}}>Renouveler mes accès</button>
         </section>
       )}
-    </main>
+
+      {/* Vue après connexion : Utilisateur Standard */}
+      {step === 'welcome' && (
+        <div className="welcome-area">
+          <div className="success-icon"><CheckCircle size={48} color="#10b981" /></div>
+          <h2>Bienvenue, {userData.username}</h2>
+          <p>Vos services Cloud sont désormais accessibles.</p>
+          <button onClick={handleLogout} className="btn-secondary">
+            <LogOut size={16} /> Déconnexion
+          </button>
+        </div>
+      )}
+
+      {/* Vue après connexion : Espace pilotage Admin */}
+      {step === 'dashboard' && userRole === 'admin' && (
+        <div className="admin-area">
+          <div className="admin-header">
+            <h2>Espace Superviseur</h2>
+            <button onClick={handleLogout} className="btn-logout" title="Déconnexion">
+              <LogOut size={18} />
+            </button>
+          </div>
+          <AdminDashboard stats={stats} />
+        </div>
+      )}
+    </Layout>
   );
 }
 
