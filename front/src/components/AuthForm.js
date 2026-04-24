@@ -11,12 +11,28 @@ const AuthForm = ({ onLogin, onChange, loading, onSwitch }) => {
           <input type="text" id="user" required onChange={(e) => onChange('username', e.target.value)} />
         </div>
         <div className="input-group">
-          <label htmlFor="pass">Mot de passe</label>
-          <input type="password" id="pass" required onChange={(e) => onChange('password', e.target.value)} />
+          <label htmlFor="pass">Mot de passe (24 caractères)</label>
+          <input 
+            type="password" 
+            id="pass" 
+            required 
+            minLength="24" 
+            maxLength="24"
+            placeholder="Entrez vos 24 caractères"
+            onChange={(e) => onChange('password', e.target.value)} 
+          />
         </div>
         <div className="input-group">
-          <label htmlFor="mfa">Code 2FA (TOTP)</label>
-          <input type="text" id="mfa" maxLength="6" placeholder="000000" required onChange={(e) => onChange('token', e.target.value)} />
+          <label htmlFor="mfa">Code 2FA (6 chiffres)</label>
+          <input 
+            type="text" 
+            id="mfa" 
+            pattern="[0-9]{6}" 
+            maxLength="6" 
+            placeholder="000000" 
+            required 
+            onChange={(e) => onChange('token', e.target.value)} 
+          />
         </div>
         <button type="submit" disabled={loading}>
           {loading ? <RefreshCw className="spin" size={18} /> : "Accéder au Cloud"}

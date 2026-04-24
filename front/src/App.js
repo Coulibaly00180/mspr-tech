@@ -107,8 +107,7 @@ function App() {
   };
 
   return (
-    <Layout>
-      {/* Affichage des messages d'erreur */}
+    <Layout username={userData.username} step={step}>
       {error && (
         <div className="alert-error">
           <AlertTriangle size={16} /> {error}
