@@ -6,7 +6,7 @@ const Layout = ({ children }) => {
       <main className="container" role="main">
         <header>
           <h1>COFRAP Cloud</h1>
-          <p>Authentification Haute Sécurité</p>
+          <p>Authentification</p>
         </header>
         {children}
       </main>
