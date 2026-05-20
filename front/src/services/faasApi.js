@@ -2,7 +2,7 @@
 const GATEWAY_URL = "http://<votre-ip-gateway>:8080/function";
 
 export const faasApi = {
-  // Mission 6 : Authentification et vérification d'expiration (6 mois)
+  // Authentification et vérification d'expiration (6 mois)
   async login(credentials) {
     const response = await fetch(`${GATEWAY_URL}/auth-user`, {
       method: 'POST',
@@ -12,7 +12,7 @@ export const faasApi = {
     return response.json();
   },
 
-  // Mission 6 : Génération MDP (24 chars) + QR Code
+  // Génération MDP (24 chars) + QR Code
   async generatePassword(username) {
     const response = await fetch(`${GATEWAY_URL}/generate-password`, {
       method: 'POST',
@@ -22,7 +22,7 @@ export const faasApi = {
     return response.json();
   },
 
-  // Mission 6 : Génération Secret 2FA + QR Code
+  // Génération Secret 2FA + QR Code
   async generate2FA(username) {
     const response = await fetch(`${GATEWAY_URL}/generate-2fa`, {
       method: 'POST',
