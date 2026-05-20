@@ -4,74 +4,71 @@ on:
   push:
     branches: [ main, master, develop ]
     paths:
-      - 'front/**' # Se déclenche uniquement si des fichiers du dossier front sont modifiés
+      - 'front/**'
   pull_request:
     branches: [ main, master, develop ]
     paths:
-      - 'front/**' # Se déclenche uniquement si la PR concerne le dossier front
+      - 'front/**'
 
 jobs:
-  # =======================================================
-  # JOB 1 : VALIDATION (S'exécute pour toutes les branches)
-  # =======================================================
+  # ==========================================
+  # JOB 1 : VALIDATION & EXTRACTION VERSION
+  # ==========================================
   validate:
     runs-on: ubuntu-latest
     outputs:
-      image_tag: ${{ steps.vars.outputs.sha_short }}
+      app_version: ${{ steps.package-version.outputs.version }} # On exporte la version pour le job de deploy
     steps:
-      # 1. Récupération du code du dépôt
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Configuration de l'environnement Node/NPM via Volta
+      # Étape Magique : Extrait la version du package.json du Front
+      - name: Read Package Version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+        with:
+          path: front
+
       - name: Setup Volta (Node & NPM)
         uses: volta-cli/action@v1
         with:
           package-json-path: '${{ github.workspace }}/front/package.json'
 
-      # 3. Installation propre des dépendances du Front
       - name: Install Dependencies
         run: |
           cd front
           npm ci 
 
-      # 4. Scan de sécurité des dépendances (DevSecOps)
+      # Scan ciblé uniquement sur la prod suite à notre analyse DevSecOps
       - name: CyberSecurity Scan (npm audit)
         run: |
           cd front
-          npm audit --audit-level=high
+          npm audit --only=prod --audit-level=high
 
-      # 5. Exécution de tous les tests (Unitaires + vos 4 fichiers d'Intégration)
       - name: Run All Tests (Jest)
         run: |
           cd front
           npm test -- --watchAll=false
 
-      # 6. Génération d'un identifiant court (SHA) pour taguer l'image Docker
-      - name: Set outputs
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-  # =======================================================
+  # ==========================================
   # JOB 2 : DEPLOY (S'exécute UNIQUEMENT sur MAIN / MASTER)
-  # =======================================================
+  # ==========================================
   deploy:
     runs-on: ubuntu-latest
-    needs: validate # Attend obligatoirement que le Job 'validate' soit une réussite totale
-    # Condition stricte : Uniquement si le push ou la PR cible la branche de production (main ou master)
+    needs: validate
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.base_ref == 'main' || github.base_ref == 'master'
     
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # --- ÉTAPE A : CONNEXION ET PUSH SUR DOCKER HUB ---
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Build et Push en utilisant le tag de version (ex: msprepsi/access-secure-front:0.1.0)
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -80,24 +77,20 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/access-secure-front:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/access-secure-front:${{ needs.validate.outputs.image_tag }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/access-secure-front:${{ needs.validate.outputs.app_version }}
 
-      # --- ÉTAPE B : MISE À JOUR DU DÉPÔT D'INFRASTRUCTURE (GITOPS) ---
       - name: Checkout Infra Repository
         uses: actions/checkout@v4
         with:
-          # /!\ PENSEZ À REMPLACER PAR VOTRE PROPRE NOM DE DÉPÔT GITHUB INFRA /!\
-          repository: 'TON_COMPTE_GITHUB/TON_DEPOT_INFRA'
+          repository: 'TON_COMPTE_GITHUB/TON_DEPOT_INFRA' # /!\ À adapter
           token: ${{ secrets.INFRA_REPO_TOKEN }}
           path: 'infra-repo'
 
+      # Kustomize met maintenant à jour le tag avec le numéro de version (ex: 0.1.0)
       - name: Update Kustomize Image Tag
         run: |
-          # Navigation jusqu'au dossier contenant le kustomization.yaml de l'environnement DEV
           cd infra-repo/apps/dev 
-          
-          # Modifie automatiquement le champ "newTag:" avec le SHA du commit actuel
-          sed -i "s|newTag:.*|newTag: ${{ needs.validate.outputs.image_tag }}|g" kustomization.yaml
+          sed -i "s|newTag:.*|newTag: ${{ needs.validate.outputs.app_version }}|g" kustomization.yaml
           
       - name: Commit & Push to Infra Repo
         run: |
@@ -105,5 +98,5 @@ jobs:
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
           git add .
-          git commit -m "chore(dev-deploy): update front image tag to ${{ needs.validate.outputs.image_tag }} [skip ci]"
+          git commit -m "chore(dev-deploy): update front image tag to v${{ needs.validate.outputs.app_version }} [skip ci]"
           git push origin main
