@@ -1,4 +1,4 @@
-// URL de votre Gateway OpenFaaS (à adapter selon votre déploiement K3S/Cloud)
+// URL du Gateway OpenFaaS (à adapter)
 const GATEWAY_URL = "http://<votre-ip-gateway>:8080/function";
 
 export const faasApi = {
