@@ -17,17 +17,17 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     outputs:
-      app_version: ${{ steps.package-version.outputs.version }} # On exporte la version pour le job de deploy
+      app_version: ${{ steps.package-version.outputs.version }} # Version exportée pour le job deploy
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Étape Magique : Extrait la version du package.json du Front
+      # Extraction native, sécurisée et souveraine sans dépendance tierce (DevSecOps)
       - name: Read Package Version
         id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
-        with:
-          path: front
+        run: |
+          VERSION=$(node -p "require('./front/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Setup Volta (Node & NPM)
         uses: volta-cli/action@v1
@@ -39,7 +39,7 @@ jobs:
           cd front
           npm ci 
 
-      # Scan ciblé uniquement sur la prod suite à notre analyse DevSecOps
+      # Scan de sécurité ciblé uniquement sur la prod (Acceptation des risques de l'outillage de dev)
       - name: CyberSecurity Scan (npm audit)
         run: |
           cd front
@@ -68,7 +68,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Build et Push en utilisant le tag de version (ex: msprepsi/cofrap-webapp:0.1.0)
+      # Build et Push avec le tag "latest" ET le tag SemVer dynamique de ton package.json
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -82,11 +82,11 @@ jobs:
       - name: Checkout Infra Repository
         uses: actions/checkout@v4
         with:
-          repository: 'TON_COMPTE_GITHUB/TON_DEPOT_INFRA' # /!\ À adapter
+          repository: 'TON_COMPTE_GITHUB/TON_DEPOT_INFRA' # /!\ À modifier avec tes vrais noms GitHub
           token: ${{ secrets.INFRA_REPO_TOKEN }}
           path: 'infra-repo'
 
-      # Kustomize met maintenant à jour le tag avec le numéro de version (ex: 0.1.0)
+      # Kustomize met à jour le tag avec le numéro extrait (ex: 0.1.0)
       - name: Update Kustomize Image Tag
         run: |
           cd infra-repo/apps/dev 
