@@ -1,0 +1,23 @@
+# OpenFaaS build output
+build/
+template/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets / local files
+*.env
+.env
+encryption-key.txt
+*.key
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/

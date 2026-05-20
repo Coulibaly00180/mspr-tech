@@ -1,0 +1,42 @@
+version: 1.0
+
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+
+functions:
+  generate-password:
+    lang: python3-http-debian
+    handler: ./generate-password
+    image: kcz180/generate-password:0.1.0
+    secrets:
+      - db-host
+      - db-port
+      - db-name
+      - db-user
+      - db-password
+      - encryption-key
+
+  generate-2fa:
+    lang: python3-http-debian
+    handler: ./generate-2fa
+    image: kcz180/generate-2fa:0.1.0
+    secrets:
+      - db-host
+      - db-port
+      - db-name
+      - db-user
+      - db-password
+      - encryption-key
+
+  authenticate-user:
+    lang: python3-http-debian
+    handler: ./authenticate-user
+    image: kcz180/authenticate-user:0.1.0
+    secrets:
+      - db-host
+      - db-port
+      - db-name
+      - db-user
+      - db-password
+      - encryption-key
