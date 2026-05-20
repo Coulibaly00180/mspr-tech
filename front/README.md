@@ -2,6 +2,19 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Pré-requis
+- node et npm
+- volta 
+
+Pour installer volta :
+- winget install Volta.Volta (powershell)
+- curl https://get.volta.sh | bash (Mac / Linux (ou WSL)
+
+Épingler les versions dans votre projet (Le "Pinning")
+/!\ ATTENTION : Les manipulations qui suivent ne doivent être exécutées que par la personne qui met en place le projet (ou lors d'une mise à jour majeure décidée par l'équipe)
+- volta pin node@xx.xx.xx (Bash powershell à la racine du projet)
+- volta pin npm@xx.xx.xx (Bash ou powershell à la racine du projet)
+
 ## Available Scripts
 
 In the project directory, you can run:
