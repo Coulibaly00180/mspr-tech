@@ -68,7 +68,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Build et Push en utilisant le tag de version (ex: msprepsi/access-secure-front:0.1.0)
+      # Build et Push en utilisant le tag de version (ex: msprepsi/cofrap-webapp:0.1.0)
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -76,8 +76,8 @@ jobs:
           file: ./front/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/access-secure-front:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/access-secure-front:${{ needs.validate.outputs.app_version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/cofrap-webapp:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/cofrap-webapp:${{ needs.validate.outputs.app_version }}
 
       - name: Checkout Infra Repository
         uses: actions/checkout@v4
