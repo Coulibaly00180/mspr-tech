@@ -82,7 +82,7 @@ jobs:
       - name: Checkout Infra Repository
         uses: actions/checkout@v4
         with:
-          repository: 'msprepsi/mspr-kub'
+          repository: 'Coulibaly00180/mspr-kub'
           token: ${{ secrets.INFRA_REPO_TOKEN }}
           path: 'infra-repo'
 
