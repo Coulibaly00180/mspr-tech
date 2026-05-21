@@ -12,17 +12,16 @@ on:
 
 jobs:
   # ==========================================
-  # JOB 1 : VALIDATION & EXTRACTION VERSION
+  # JOB 1 : VALIDATION & EXTRACTION VERSION (S'exécute partout, même sur develop)
   # ==========================================
   validate:
     runs-on: ubuntu-latest
     outputs:
-      app_version: ${{ steps.package-version.outputs.version }} # Version exportée pour le job deploy
+      app_version: ${{ steps.package-version.outputs.version }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Extraction native, sécurisée et souveraine sans dépendance tierce (DevSecOps)
       - name: Read Package Version
         id: package-version
         run: |
@@ -39,7 +38,6 @@ jobs:
           cd front
           npm ci 
 
-      # Scan de sécurité ciblé uniquement sur la prod (Acceptation des risques de l'outillage de dev)
       - name: CyberSecurity Scan (npm audit)
         run: |
           cd front
@@ -56,7 +54,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: validate
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.base_ref == 'main' || github.base_ref == 'master'
+    # CORRECTION ICI : On restreint strictement l'exécution aux branches principales stables
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     
     steps:
       - name: Checkout Code
