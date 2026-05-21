@@ -82,7 +82,7 @@ jobs:
       - name: Checkout Infra Repository
         uses: actions/checkout@v4
         with:
-          repository: 'TON_COMPTE_GITHUB/TON_DEPOT_INFRA' # /!\ À modifier avec tes vrais noms GitHub
+          repository: 'msprepsi/mspr-kub'
           token: ${{ secrets.INFRA_REPO_TOKEN }}
           path: 'infra-repo'
 
