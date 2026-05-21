@@ -79,24 +79,28 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/cofrap-webapp:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/cofrap-webapp:${{ needs.validate.outputs.app_version }}
 
-      - name: Checkout Infra Repository
-        uses: actions/checkout@v4
-        with:
-          repository: 'Coulibaly00180/mspr-kub'
-          token: ${{ secrets.INFRA_REPO_TOKEN }}
-          path: 'infra-repo'
+# =======================================================================
+# ÉTAPES GITOPS EN ATTENTE (Commentées temporairement)
+# Désactiver les dièses (#) ci-dessous quand le dépôt mspr-kub sera prêt !
+# =======================================================================
+#      - name: Checkout Infra Repository
+#        uses: actions/checkout@v4
+#        with:
+#          repository: 'Coulibaly00180/mspr-kub'
+#          token: ${{ secrets.INFRA_REPO_TOKEN }}
+#          path: 'infra-repo'
 
-      # Kustomize met à jour le tag avec le numéro extrait (ex: 0.1.0)
-      - name: Update Kustomize Image Tag
-        run: |
-          cd infra-repo/apps/dev 
-          sed -i "s|newTag:.*|newTag: ${{ needs.validate.outputs.app_version }}|g" kustomization.yaml
-          
-      - name: Commit & Push to Infra Repo
-        run: |
-          cd infra-repo
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions@github.com"
-          git add .
-          git commit -m "chore(dev-deploy): update front image tag to v${{ needs.validate.outputs.app_version }} [skip ci]"
-          git push origin main
+#      # Kustomize met à jour le tag avec le numéro extrait (ex: 0.1.0)
+#      - name: Update Kustomize Image Tag
+#        run: |
+#          cd infra-repo/apps/dev 
+#          sed -i "s|newTag:.*|newTag: ${{ needs.validate.outputs.app_version }}|g" kustomization.yaml
+#          
+#      - name: Commit & Push to Infra Repo
+#        run: |
+#          cd infra-repo
+#          git config --global user.name "GitHub Actions Bot"
+#          git config --global user.email "actions@github.com"
+#          git add .
+#          git commit -m "chore(dev-deploy): update front image tag to v${{ needs.validate.outputs.app_version }} [skip ci]"
+#          git push origin main
