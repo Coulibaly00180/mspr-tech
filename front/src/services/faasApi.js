@@ -1,34 +1,25 @@
+import axios from 'axios';
+
 // URL du Gateway OpenFaaS (à adapter)
-const GATEWAY_URL = "http://172.16.89.44:8080/function";
+const GATEWAY_URL = process.env.REACT_APP_COFRAP_API_URL;
 
 export const faasApi = {
   // Authentification et vérification d'expiration (6 mois)
   async login(credentials) {
-    const response = await fetch(`${GATEWAY_URL}/authenticate-user`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
-    });
-    return response.json();
+    // Axios lève une erreur tout seul si les credentials sont faux (ex: 401)
+    const response = await axios.post(`${GATEWAY_URL}/authenticate-user`, credentials);
+    return response.data; // .data contient directement le JSON décodé
   },
 
   // Génération MDP (24 chars) + QR Code
   async generatePassword(username) {
-    const response = await fetch(`${GATEWAY_URL}/generate-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username }),
-    });
-    return response.json();
+    const response = await axios.post(`${GATEWAY_URL}/generate-password`, { username });
+    return response.data;
   },
 
   // Génération Secret 2FA + QR Code
   async generate2FA(username) {
-    const response = await fetch(`${GATEWAY_URL}/generate-2fa`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username }),
-    });
-    return response.json();
+    const response = await axios.post(`${GATEWAY_URL}/generate-2fa`, { username });
+    return response.data;
   }
 };
