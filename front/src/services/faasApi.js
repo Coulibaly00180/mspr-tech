@@ -1,10 +1,10 @@
 // URL du Gateway OpenFaaS (à adapter)
-const GATEWAY_URL = "http://<votre-ip-gateway>:8080/function";
+const GATEWAY_URL = "http://172.16.89.44:8080/function";
 
 export const faasApi = {
   // Authentification et vérification d'expiration (6 mois)
   async login(credentials) {
-    const response = await fetch(`${GATEWAY_URL}/auth-user`, {
+    const response = await fetch(`${GATEWAY_URL}/authenticate-user`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
