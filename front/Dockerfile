@@ -1,4 +1,3 @@
-# Build de l'application
 FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./
@@ -22,12 +21,11 @@ RUN chown -R appuser:appgroup /usr/share/nginx/html && \
     touch /var/run/nginx.pid && \
     chown -R appuser:appgroup /var/run/nginx.pid
 
-# Configuration du port 8080
 RUN sed -i 's/listen 80;/listen 8080;/g' /etc/nginx/conf.d/default.conf
 
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Script à exécuter au démarrage du conteneur K8s sous l'utilisateur appuser (au RUNTIME)
+# Ce script sera exécuté au démarrage du conteneur K8s avec l'utilisateur appuser (au RUNTIME)
 RUN echo '#!/bin/sh \n\
 find /usr/share/nginx/html -type f -name "*.js" -exec sed -i "s|__VALUE_API_URL__|${REACT_APP_COFRAP_API_URL}|g" {} + \n\
 exec "$@"' > /docker-entrypoint.d/30-inject-env.sh && \

@@ -1,14 +1,12 @@
 import axios from 'axios';
 
-// URL du Gateway OpenFaaS (à adapter)
 const GATEWAY_URL = process.env.REACT_APP_COFRAP_API_URL;
 
 export const faasApi = {
   // Authentification et vérification d'expiration (6 mois)
   async login(credentials) {
-    // Axios lève une erreur tout seul si les credentials sont faux (ex: 401)
     const response = await axios.post(`${GATEWAY_URL}/authenticate-user`, credentials);
-    return response.data; // .data contient directement le JSON décodé
+    return response.data; 
   },
 
   // Génération MDP (24 chars) + QR Code
