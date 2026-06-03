@@ -1,11 +1,10 @@
-# syntax=docker/dockerfile:1
 FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 
-# Placeholder UNIQUE qui sera gravé temporairement dans le JS compilé
+# Placeholder unique qui sera gravé temporairement dans le JS compilé
 ENV REACT_APP_COFRAP_API_URL=__VALUE_API_URL__
 RUN npm run build
 
@@ -24,7 +23,7 @@ RUN chown -R appuser:appgroup /usr/share/nginx/html && \
 
 RUN sed -i 's/listen 80;/listen 8080;/g' /etc/nginx/conf.d/default.conf
 
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build --chown=appuser:appgroup /app/build /usr/share/nginx/html
 
 RUN printf '#!/bin/sh\nfind /usr/share/nginx/html -type f -name "*.js" -exec sed -i "s|__VALUE_API_URL__|${REACT_APP_COFRAP_API_URL}|g" {} +\nexec "$@"\n' > /docker-entrypoint.d/30-inject-env.sh && \
     chmod +x /docker-entrypoint.d/30-inject-env.sh && \
