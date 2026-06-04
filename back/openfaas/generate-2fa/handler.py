@@ -39,7 +39,12 @@ def handle(event, context):
         if not username:
             return {
                 "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "POST, OPTIONS",
+                    "Access-Control-Allow-Headers": "Content-Type"
+                },
                 "body": {
                     "error": "Le champ 'username' est obligatoire."
                 }
@@ -81,7 +86,12 @@ def handle(event, context):
                 if updated_user is None:
                     return {
                         "statusCode": 404,
-                        "headers": {"Content-Type": "application/json"},
+                        "headers": {
+                            "Content-Type": "application/json",
+                            "Access-Control-Allow-Origin": "*",
+                            "Access-Control-Allow-Methods": "POST, OPTIONS",
+                            "Access-Control-Allow-Headers": "Content-Type"
+                        },
                         "body": {
                             "error": "Utilisateur introuvable. Générez d'abord le mot de passe avec generate-password."
                         }
@@ -92,7 +102,10 @@ def handle(event, context):
         return {
             "statusCode": 200,
             "headers": {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
             },
             "body": {
                 "message": "Secret 2FA généré avec succès.",
@@ -108,7 +121,12 @@ def handle(event, context):
         print(f"Erreur generate-2fa: {str(e)}")
         return {
             "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            },
             "body": {
                 "error": "Erreur interne lors de la génération du secret 2FA.",
                 "details": str(e)

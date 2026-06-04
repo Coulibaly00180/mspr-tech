@@ -61,6 +61,12 @@ def handle(event, context):
         if not username:
             return {
                 "statusCode": 400,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "POST, OPTIONS",
+                    "Access-Control-Allow-Headers": "Content-Type"
+                },
                 "body": {
                     "error": "Le champ 'username' est obligatoire."
                 }
@@ -97,7 +103,10 @@ def handle(event, context):
         return {
             "statusCode": 200,
             "headers": {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
             },
             "body": {
                 "message": "Mot de passe généré avec succès.",
@@ -112,6 +121,12 @@ def handle(event, context):
         print(f"Erreur generate-password: {str(e)}")
         return {
             "statusCode": 500,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            },
             "body": {
                 "error": "Erreur interne lors de la génération du mot de passe.",
                 "details": str(e)
