@@ -84,9 +84,10 @@ function App() {
       const pwdRes = await faasApi.generatePassword(userData.username);
       const mfaRes = await faasApi.generate2FA(userData.username);
 
+      // Adaptation au modèle du backend + formatage Data URI pour l'affichage HTML
       setCodes({ 
-        pwdQr: pwdRes.qrCode, 
-        mfaQr: mfaRes.qrCode 
+        pwdQr: pwdRes.qr_code_png_base64 ? `data:image/png;base64,${pwdRes.qr_code_png_base64}` : '', 
+        mfaQr: mfaRes.qr_code_png_base64 ? `data:image/png;base64,${mfaRes.qr_code_png_base64}` : '' 
       });
 
       setStep('display_qr');

@@ -11,11 +11,19 @@ const QRCodeDisplay = ({ codes, onFinish }) => {
       <div className="qr-grid">
         <div className="qr-card">
           <label>MOT DE PASSE</label>
-          <img src={codes.pwdQr} alt="QR Password" />
+          {codes.pwdQr ? (
+            <img src={codes.pwdQr} alt="QR Password" />
+          ) : (
+            <div style={{ padding: '2rem', color: '#64748b', fontSize: '0.85rem' }}>Génération...</div>
+          )}
         </div>
         <div className="qr-card">
           <label>SECRET 2FA</label>
-          <img src={codes.mfaQr} alt="QR 2FA" />
+          {codes.mfaQr ? (
+            <img src={codes.mfaQr} alt="QR 2FA" />
+          ) : (
+            <div style={{ padding: '2rem', color: '#64748b', fontSize: '0.85rem' }}>Génération...</div>
+          )}
         </div>
       </div>
       <button onClick={onFinish} style={{ width: '100%' }}>J'ai sauvegardé mes accès</button>
