@@ -8,7 +8,7 @@ functions:
   generate-password:
     lang: python3-http-debian
     handler: ./generate-password
-    image: kcz180/generate-password:0.1.0
+    image: kcz180/generate-password:latest
     secrets:
       - db-host
       - db-port
@@ -20,7 +20,7 @@ functions:
   generate-2fa:
     lang: python3-http-debian
     handler: ./generate-2fa
-    image: kcz180/generate-2fa:0.1.0
+    image: kcz180/generate-2fa:latest
     secrets:
       - db-host
       - db-port
@@ -32,7 +32,7 @@ functions:
   authenticate-user:
     lang: python3-http-debian
     handler: ./authenticate-user
-    image: kcz180/authenticate-user:0.1.0
+    image: kcz180/authenticate-user:latest
     secrets:
       - db-host
       - db-port
