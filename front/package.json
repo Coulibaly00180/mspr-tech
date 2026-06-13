@@ -17,7 +17,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "cypress:open": "cypress open --env MOCK_MODE=true",
+  
+    "test:integration": "cypress run --env MOCK_MODE=true",
+    "test:e2e": "cypress run --env MOCK_MODE=false"
   },
   "eslintConfig": {
     "extends": [
@@ -42,9 +46,10 @@
     "npm": "11.11.1"
   },
   "devDependencies": {
+    "cypress": "^15.16.0",
     "react-scripts": "^5.0.1"
   },
- "overrides": {
+  "overrides": {
     "nth-check": "^2.1.1",
     "postcss": "^8.4.31",
     "underscore": "^1.13.7",

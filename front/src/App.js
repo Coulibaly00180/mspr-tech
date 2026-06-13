@@ -23,7 +23,6 @@ function App() {
     logs: ["Système prêt - Cluster K3S opérationnel"]
   });
 
-  // Mise à jour des champs de saisie
   const updateField = (field, value) => {
     setUserData(prev => ({ ...prev, [field]: value }));
   };
